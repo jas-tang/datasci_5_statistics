@@ -132,3 +132,165 @@ Mean prevalence for non-southern states: 800.2920560366094
 ```
 
 # ANOVA
+First, import the appropriate packages.
+```
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+```
+
+For the ANOVA test, we choose a dataset that has one numerical variable and one categorical variable with more than two levels or groups. I chose a dataset that looked at the enrollment of a child health 
+plus plan. 
+
+Is there a significant difference between the mean values of enrollment for child health plus between Race?
+
+Is there a significant difference between the mean values of enrollment for child health plus between Gender?
+
+Is there a significant difference between the mean values of enrollment for child health plus between any combination of Race and Gender?
+
+The hypothesis is that there is significant difference between race and gender for enrollment of child health plus plans.
+
+The null hypothesis that that there is no significant difference between race and gender for enrollment of child health plus plans.
+
+I looked at if Gender and Race affects the number of enrollments.
+```
+model = ols('enrollees ~ C(Race) * C(Gender)', data=df3).fit()
+model
+anova_table = sm.stats.anova_lm(model, typ=2)
+print(anova_table)
+```
+```
+                         sum_sq        df            F        PR(>F)
+C(Race)            5.920157e+09       5.0  6216.421584  0.000000e+00
+C(Gender)          1.367837e+07       1.0    71.814400  2.375483e-17
+C(Race):C(Gender)  8.138360e+06       5.0     8.545631  4.200760e-08
+Residual           5.302848e+10  278411.0          NaN           NaN
+```
+The large F-statistic says that the means of each group vary greatly from the overall mean group. At least one of the group means is vastly different from the others.
+
+The p-values being less than 0.05 means we reject the null hypothesis. This means that there are statistically significant differences between the race and gender of child health plus enrollment.
+We can see that this is true by looking at the mean rates.
+```
+df3.groupby('Race')['enrollees'].mean()
+```
+```
+Race
+Asian              100.428293
+Black               97.979895
+Hispanic           190.645307
+Native American      4.315089
+Other              387.262887
+White              393.154588
+Name: enrollees, dtype: float64
+```
+```
+df3.groupby('Gender')['enrollees'].mean()
+```
+```
+Gender
+Female    223.220469
+Male      235.878485
+Name: enrollees, dtype: float64
+```
+
+# Regression Analysis
+First, import the appropriate packages.
+```
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+```
+For a regression analysis, we choose a dataset with one numerical independent variable, and one numberical dependent variable. I chose a dataset that looked at Covid tests and rates in the NY State. 
+
+The hypothesis is that there is a relationship between the number of covid tests and the number of positive cases. The more tests you conduct, the higher number of cases.
+
+The null hypothesis is that there is no relationship between the number covid tests and the number of positive cases.
+
+Looking at my dataset, I wanted to slim it down.
+```
+df4.columns
+```
+```
+Index(['Test Date', 'County', 'New Positives',
+       'Cumulative Number of Positives', 'Total Number of Tests Performed',
+       'Cumulative Number of Tests Performed', 'Test % Positive', 'Geography'],
+      dtype='object')
+```
+Using index number, I created a smaller dataframe.
+```
+df5 = df4.iloc[:, [3,4,6]].copy()
+```
+Then I proceeded to create variables for both. 
+```
+X = df5['Total Number of Tests Performed']
+y = df5['Cumulative Number of Positives']
+```
+```
+X = sm.add_constant(X)
+model = LinearRegression().fit(X, y)
+slope = model.coef_[0]
+intercept = model.intercept_
+r_squared = model.score(X, y)
+print(f"Slope (Coefficient for Covid): {slope:.2f}")
+print(f"Intercept: {intercept:.2f}")
+print(f"R-squared value: {r_squared:.2f}")
+```
+As a result of performing the regression analysis, we saw this result.
+```
+Slope (Coefficient for Covid): 0.00
+Intercept: 75508.94
+R-squared value: 0.25
+```
+We can also make a summary model.
+```
+model2 = sm.OLS(y, X).fit()
+```
+This being the result.
+```
+ OLS Regression Results                                  
+==========================================================================================
+Dep. Variable:     Cumulative Number of Positives   R-squared:                       0.254
+Model:                                        OLS   Adj. R-squared:                  0.254
+Method:                             Least Squares   F-statistic:                 3.174e+04
+Date:                            Sun, 08 Oct 2023   Prob (F-statistic):               0.00
+Time:                                    21:06:48   Log-Likelihood:            -1.3545e+06
+No. Observations:                           93294   AIC:                         2.709e+06
+Df Residuals:                               93292   BIC:                         2.709e+06
+Df Model:                                       1                                         
+Covariance Type:                        nonrobust                                         
+===================================================================================================
+                                      coef    std err          t      P>|t|      [0.025      0.975]
+---------------------------------------------------------------------------------------------------
+const                            7.551e+04   1648.089     45.816      0.000    7.23e+04    7.87e+04
+Total Number of Tests Performed    16.5639      0.093    178.145      0.000      16.382      16.746
+==============================================================================
+Omnibus:                   130171.097   Durbin-Watson:                   1.907
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):         35735138.991
+Skew:                           8.305   Prob(JB):                         0.00
+Kurtosis:                      97.430   Cond. No.                     1.83e+04
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.83e+04. This might indicate that there are
+strong multicollinearity or other numerical problems.
+```
+
+The coefficient being 0 indicates that there is no linear relationship between the number of COVID tests conducted and the number of positive cases.
+
+The intercept of 75508.94 suggests that, when there are no COVID tests, the estimated number of positive cases is approximately 75,508.94.
+
+An R-squared value of 0.25 means that approximately 25% of the variability. This means that the model only explains a small portion of the variation.
+
+These results suggest that either this type of test does not fit my data, or that the higher the number of tests does not lead to a change in the number of positive cases.
+
+In addition, we can create a scatter plot.
+```
+plt.scatter(df5['Total Number of Tests Performed'], df5['Cumulative Number of Positives'], label='Data Points')
+plt.plot(df5['Total Number of Tests Performed'], model.predict(X), color='blue', label='Regression Line')
+plt.xlabel('Total Number of Tests Performed')
+plt.ylabel('Cumulative Number of Positives')
+plt.title('Relationship between Number of Tests Performed and Number of Positives')
+plt.legend()
+plt.show()
+```
+
