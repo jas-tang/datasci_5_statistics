@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import chi2_contingency as chi2
 ```
 
-# The failed attempt
+## The Failed Attempt
 This Chi-Square Test was performed on a dataset with two categorical variables. I initially tried using a dataset that looked at Covid-19 effect on Nursing Homes. 
 Using .value_counts(), I found that the two categorical variables I was looking at, 'Submitted Data' and 'Passed Quality Assurance Check' did not have equal numbers. 
 This told me that one variable was missing values. I used the fillna function to replace the missing values with a value. 
@@ -275,14 +275,6 @@ Notes:
 strong multicollinearity or other numerical problems.
 ```
 
-The coefficient being 0 indicates that there is no linear relationship between the number of COVID tests conducted and the number of positive cases.
-
-The intercept of 75508.94 suggests that, when there are no COVID tests, the estimated number of positive cases is approximately 75,508.94.
-
-An R-squared value of 0.25 means that approximately 25% of the variability. This means that the model only explains a small portion of the variation.
-
-These results suggest that either this type of test does not fit my data, or that the higher the number of tests does not lead to a change in the number of positive cases.
-
 In addition, we can create a scatter plot.
 ```
 plt.scatter(df5['Total Number of Tests Performed'], df5['Cumulative Number of Positives'], label='Data Points')
@@ -293,4 +285,13 @@ plt.title('Relationship between Number of Tests Performed and Number of Positive
 plt.legend()
 plt.show()
 ```
+![](https://github.com/jas-tang/datasci_5_statistics/blob/main/images/scatterplot5.JPG)
+
+The coefficient being 0 indicates that there is no linear relationship between the number of COVID tests conducted and the number of positive cases.
+
+The intercept of 75508.94 suggests that, when there are no COVID tests, the estimated number of positive cases is approximately 75,508.94.
+
+An R-squared value of 0.25 means that approximately 25% of the variability. This means that the model only explains a small portion of the variation.
+
+These results suggest that either this type of test does not fit my data, or that the higher the number of tests does not lead to a change in the number of positive cases.
 
